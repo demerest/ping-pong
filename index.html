@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="color-scheme" content="dark" />
+<title>NEON PONG — Retro Arcade</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%2305060f'/%3E%3Crect x='4' y='9' width='4' height='14' fill='%2322e6ff'/%3E%3Crect x='24' y='9' width='4' height='14' fill='%23ff3d9a'/%3E%3Crect x='14' y='14' width='4' height='4' fill='%23fff6c9'/%3E%3C/svg%3E" />
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<main class="cab">
+
+  <header class="topbar">
+    <div class="brand">NEON<span>PONG</span></div>
+    <div class="tools">
+      <div class="chip" id="chipMode">1P · NORMAL · FIRST TO 7</div>
+      <button class="icon" id="btnSound" type="button" aria-label="Toggle sound" aria-pressed="true" title="Sound (M)">
+        <span class="ico-on">&#9834;</span><span class="ico-off">&#10005;</span>
+      </button>
+      <button class="icon" id="btnPause" type="button" aria-label="Pause game" title="Pause (Esc)">❙❙</button>
+    </div>
+  </header>
+
+  <section class="stage" id="stage">
+    <canvas id="game" width="900" height="560" aria-label="Pong play field"></canvas>
+    <div class="crt" aria-hidden="true"></div>
+
+    <!-- MAIN MENU -->
+    <div class="overlay" id="ovMenu">
+      <div class="panel">
+        <h1 class="title">NEON<span>PONG</span></h1>
+        <p class="tag">Insert coin &middot; press start</p>
+
+        <div class="field">
+          <span class="lbl">MODE</span>
+          <div class="seg" id="segMode" role="group" aria-label="Game mode">
+            <button type="button" data-val="1p" aria-pressed="true">1P vs CPU</button>
+            <button type="button" data-val="2p" aria-pressed="false">2P local</button>
+          </div>
+        </div>
+
+        <div class="field" id="fieldDiff">
+          <span class="lbl">CPU</span>
+          <div class="seg" id="segDiff" role="group" aria-label="CPU difficulty">
+            <button type="button" data-val="easy">EASY</button>
+            <button type="button" data-val="normal" aria-pressed="true">NORMAL</button>
+            <button type="button" data-val="insane">INSANE</button>
+          </div>
+        </div>
+
+        <div class="field">
+          <span class="lbl">PLAY TO</span>
+          <div class="seg" id="segScore" role="group" aria-label="Points needed to win">
+            <button type="button" data-val="5">5</button>
+            <button type="button" data-val="7" aria-pressed="true">7</button>
+            <button type="button" data-val="11">11</button>
+          </div>
+        </div>
+
+        <button class="cta" id="btnStart" type="button">START GAME</button>
+
+        <ul class="keys" id="keyHelp">
+          <li><b class="cy">P1 / YOU</b> <kbd>W</kbd><kbd>S</kbd> &nbsp;or&nbsp; <kbd>&uarr;</kbd><kbd>&darr;</kbd> &nbsp;or&nbsp; mouse</li>
+          <li><b class="mg">P2</b> <kbd>&uarr;</kbd><kbd>&darr;</kbd> <span class="only2p">(2P mode only)</span></li>
+          <li><kbd>Space</kbd> serve / pause &nbsp; <kbd>R</kbd> restart &nbsp; <kbd>M</kbd> mute &nbsp; <kbd>Esc</kbd> menu</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- PAUSE -->
+    <div class="overlay hidden" id="ovPause">
+      <div class="panel">
+        <h2 class="title sm">PAUSED</h2>
+        <p class="tag">game suspended</p>
+        <div class="stats">
+          <div class="stat"><b id="pScoreL">0</b><span id="pNameL">YOU</span></div>
+          <div class="stat"><b id="pScoreR">0</b><span id="pNameR">CPU</span></div>
+        </div>
+        <button class="cta" id="btnResume" type="button">RESUME</button>
+        <div class="row">
+          <button class="ghost" id="btnRestart" type="button">RESTART</button>
+          <button class="ghost" id="btnQuit" type="button">MAIN MENU</button>
+        </div>
+        <p class="mini"><kbd>Space</kbd> resume &middot; <kbd>R</kbd> restart &middot; <kbd>M</kbd> mute</p>
+      </div>
+    </div>
+
+    <!-- GAME OVER -->
+    <div class="overlay hidden" id="ovOver">
+      <div class="panel">
+        <p class="tag" id="overTag">match complete</p>
+        <h2 class="title sm" id="overTitle">YOU WIN</h2>
+        <div class="final" id="overScore">7 &mdash; 3</div>
+        <div class="stats">
+          <div class="stat"><b id="stHits">0</b><span>HITS</span></div>
+          <div class="stat"><b id="stRally">0</b><span>BEST RALLY</span></div>
+          <div class="stat"><b id="stSpeed">0</b><span>TOP PX/S</span></div>
+        </div>
+        <button class="cta" id="btnAgain" type="button">REMATCH</button>
+        <div class="row">
+          <button class="ghost" id="btnAgainMenu" type="button">MAIN MENU</button>
+        </div>
+        <p class="mini"><kbd>Space</kbd> rematch</p>
+      </div>
+    </div>
+  </section>
+
+  <footer class="hints">
+    <span>W/S &middot; &uarr;/&darr; &middot; MOUSE = MOVE</span>
+    <span>SPACE = SERVE / PAUSE</span>
+    <span>R = RESTART</span>
+    <span>M = MUTE</span>
+    <span>HIT WITH THE PADDLE EDGE FOR ANGLE</span>
+  </footer>
+
+</main>
+<script src="game.js"></script>
+</body>
+</html>

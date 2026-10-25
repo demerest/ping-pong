@@ -1,0 +1,7 @@
+# Qwen Code agent state
+.qwen/
+
+# OS noise
+Thumbs.db
+Desktop.ini
+.DS_Store
