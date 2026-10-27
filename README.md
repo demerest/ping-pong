@@ -53,6 +53,13 @@ input takes over from the pointer as soon as you press a move key.
 
 - **2P local** — two players, one keyboard.
 
+- **CPU vs CPU** — the attract-mode demo promoted to a full match. Two AIs play
+  each other to the target score; the difficulty you pick drives *both* sides,
+  so an Easy mirror plays out very differently from an Insane one. Neither
+  paddle takes human input — the pointer and move keys are ignored — but
+  `Space` still skips the serve countdown, `Esc` pauses and `R` restarts. The
+  winner is announced as `CPU 1` or `CPU 2`, left and right respectively.
+
 Play to 5, 7 or 11 points. Mode, difficulty, target score and mute state are
 remembered between visits via `localStorage`.
 
@@ -73,7 +80,8 @@ against a 14 px paddle, which is what makes tunnelling impossible.
 
 ## Extras
 
-Attract-mode CPU-vs-CPU demo behind the main menu · particle bursts on hits,
+Attract-mode CPU-vs-CPU demo behind the main menu (always Normal, never scores —
+distinct from the selectable **CPU vs CPU** mode) · particle bursts on hits,
 wall bounces and points · ball trail · screen shake and a colour flash when a
 point is scored · synthesized WebAudio sound effects (no audio files) ·
 end-of-match stats (total hits, best rally, top ball speed) · auto-pause when
@@ -83,6 +91,24 @@ The CRT styling — scanlines, vignette, flicker — is CSS layered over the can
 `prefers-reduced-motion` is honoured: shake and particles are cut back in the
 engine and the flicker and panel animations are disabled in CSS.
 
+## Tests
+
+```bash
+test\run.cmd          # Windows
+```
+
+No Node, no build step: the script builds a throwaway copy of `index.html` in
+`%TEMP%`, loads the real `game.js` into it plus `test/cpu-vs-cpu.js`, and runs it
+in headless Chrome (Edge as a fallback). The suite drives the game through DOM
+events only, then plays a full CPU vs CPU match and asserts on the result
+overlay — mode wiring, chip text, difficulty-field visibility, `localStorage`
+persistence, and that *both* paddles are AI-driven. Exit code 0 means all
+assertions passed.
+
+The harness shims `requestAnimationFrame` onto `setTimeout` so the game loop
+advances under Chrome's `--virtual-time-budget`, which fast-forwards timers but
+never fires rAF on its own.
+
 ## Files
 
 | File | Role |
@@ -90,6 +116,7 @@ engine and the flicker and panel animations are disabled in CSS.
 | `index.html` | Cabinet shell, canvas, menu / pause / game-over overlays |
 | `style.css` | CRT neon styling, overlays, responsive `aspect-ratio` stage |
 | `game.js` | Game loop, physics, CPU AI, particles, audio, input, UI wiring |
+| `test/` | Headless-Chrome suite for the CPU vs CPU mode |
 
 The canvas keeps a fixed 900×560 logical coordinate space and is scaled by CSS,
 with the backing store sized to the device pixel ratio (capped at 2×) so it

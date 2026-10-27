@@ -80,9 +80,9 @@
   function clamp(v, a, b) { return v < a ? a : (v > b ? b : v); }
 
   function names() {
-    return settings.mode === '1p'
-      ? { l: 'YOU', r: 'CPU' }
-      : { l: 'P1', r: 'P2' };
+    if (settings.mode === '1p') return { l: 'YOU', r: 'CPU' };
+    if (settings.mode === 'cpu') return { l: 'CPU 1', r: 'CPU 2' };
+    return { l: 'P1', r: 'P2' };
   }
 
   // -------------------------------------------------------------- persistence
@@ -91,7 +91,7 @@
       var raw = window.localStorage.getItem(LS_KEY);
       if (!raw) return;
       var o = JSON.parse(raw);
-      if (o.mode === '1p' || o.mode === '2p') settings.mode = o.mode;
+      if (o.mode === '1p' || o.mode === '2p' || o.mode === 'cpu') settings.mode = o.mode;
       if (DIFF[o.diff]) settings.diff = o.diff;
       if (o.winScore === 5 || o.winScore === 7 || o.winScore === 11) settings.winScore = o.winScore;
       settings.muted = !!o.muted;
@@ -287,7 +287,10 @@
       updateAI(right, dt, 'normal');
       return;
     }
-    if (settings.mode === '1p') {
+    if (settings.mode === 'cpu') {
+      updateAI(left, dt, settings.diff);
+      updateAI(right, dt, settings.diff);
+    } else if (settings.mode === '1p') {
       updateHuman(left, dt);
       updateAI(right, dt, settings.diff);
     } else {
@@ -432,12 +435,15 @@
   function endMatch(winner) {
     state = S.OVER;
     var n = names();
-    var label = winner.side === 'left' ? n.l : n.r;
-    if (settings.mode === '1p') label = winner.side === 'left' ? 'YOU WIN' : 'CPU WINS';
+    var leftWon = winner.side === 'left';
+    var label = leftWon ? n.l : n.r;
+    var tag = leftWon ? 'player one takes the match' : 'match complete';
+    if (settings.mode === '1p') label = leftWon ? 'YOU WIN' : 'CPU WINS';
+    else if (settings.mode === 'cpu') { label += ' WINS'; tag = 'machine vs machine'; }
     var title = $('overTitle');
     title.textContent = label;
-    title.className = 'title sm ' + (winner.side === 'left' ? 'p1' : 'p2');
-    $('overTag').textContent = winner.side === 'left' ? 'player one takes the match' : 'match complete';
+    title.className = 'title sm ' + (leftWon ? 'p1' : 'p2');
+    $('overTag').textContent = tag;
     $('overScore').innerHTML = left.score + ' &mdash; ' + right.score;
     $('stHits').textContent = stats.hits;
     $('stRally').textContent = stats.bestRally;
@@ -483,10 +489,15 @@
   function hide(el) { el.classList.add('hidden'); }
 
   function updateChip() {
-    chipMode.textContent = settings.mode === '1p'
-      ? '1P · ' + DIFF[settings.diff].label + ' · FIRST TO ' + settings.winScore
-      : '2P LOCAL · FIRST TO ' + settings.winScore;
-    fieldDiff.classList.toggle('hidden', settings.mode !== '1p');
+    var to = 'FIRST TO ' + settings.winScore;
+    if (settings.mode === '1p') {
+      chipMode.textContent = '1P · ' + DIFF[settings.diff].label + ' · ' + to;
+    } else if (settings.mode === 'cpu') {
+      chipMode.textContent = 'CPU vs CPU · ' + DIFF[settings.diff].label + ' · ' + to;
+    } else {
+      chipMode.textContent = '2P LOCAL · ' + to;
+    }
+    fieldDiff.classList.toggle('hidden', settings.mode === '2p');
     btnSound.setAttribute('aria-pressed', settings.muted ? 'false' : 'true');
     btnSound.setAttribute('aria-label', settings.muted ? 'Unmute sound' : 'Mute sound');
   }
