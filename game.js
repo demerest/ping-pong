@@ -6,12 +6,25 @@
   var PADDLE_W = 14, PADDLE_H = 96, PADDLE_MARGIN = 30;
   var BALL = 12;
   var BASE_SPEED = 380;
-  var MAX_SPEED = 940;
+  var MAX_SPEED = 1100;
   var SPEEDUP = 1.045;
   var MAX_ANGLE = Math.PI * 0.385;
   var HUMAN_SPEED = 640;
   var STEP = 1 / 120;
   var FONT = 'ui-monospace,"Cascadia Mono","Segoe UI Mono","Roboto Mono","Courier New",monospace';
+
+  // A predicting AI can cross the whole court between hits, and it always aims
+  // to meet the ball at its centre, so two CPUs would rally forever once the
+  // speed ramp saturates. Past a free window every hit therefore adds aim error
+  // in absolute pixels and stretches the re-plan interval, until the AI's own
+  // error exceeds the 54 px hit tolerance (half paddle + half ball) and a miss
+  // becomes inevitable. The error must be additive: scaling the base error
+  // multiplicatively never lifts Insane's ±11 px clear of that tolerance.
+  var FATIGUE_FREE = 6;
+  var FATIGUE_ERR = 8;
+  var FATIGUE_ERR_MAX = 160;
+  var FATIGUE_REACT = 0.06;
+  var FATIGUE_REACT_MAX = 4;
 
   var C = {
     p1: '#22e6ff',
@@ -222,8 +235,10 @@
 
     pad.aiTimer -= dt;
     if (pad.aiTimer <= 0) {
-      pad.aiTimer = d.react;
-      pad.aiErr = (Math.random() * 2 - 1) * d.error;
+      var pressure = Math.max(0, rally - FATIGUE_FREE);
+      pad.aiTimer = d.react * Math.min(FATIGUE_REACT_MAX, 1 + pressure * FATIGUE_REACT);
+      pad.aiErr = (Math.random() * 2 - 1) *
+        (d.error + Math.min(FATIGUE_ERR_MAX, pressure * FATIGUE_ERR));
       pad.aiTarget = (toward && d.predict) ? predictY(faceX) : (ball.y + ball.h / 2);
     }
 
